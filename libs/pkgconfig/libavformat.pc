@@ -1,0 +1,14 @@
+prefix=/home/yf/ffmpeg_build
+exec_prefix=${prefix}
+libdir=/home/yf/ffmpeg_build/lib
+includedir=/home/yf/ffmpeg_build/include
+
+Name: libavformat
+Description: FFmpeg container format library
+Version: 59.34.100
+Requires: 
+Requires.private: libavcodec >= 59.50.100, libswresample >= 4.9.100, libavutil >= 57.39.100
+Conflicts:
+Libs: -L${libdir}  -lavformat 
+Libs.private: -lm -latomic -lz -lgnutls -lgmp /usr/lib/x86_64-linux-gnu/libunistring.so -lidn2 -lhogweed -lgmp -lnettle -ltasn1 -lp11-kit -lz
+Cflags: -I${includedir}

@@ -1,0 +1,14 @@
+prefix=/home/yf/ffmpeg_build
+exec_prefix=${prefix}
+libdir=/home/yf/ffmpeg_build/lib
+includedir=/home/yf/ffmpeg_build/include
+
+Name: libavfilter
+Description: FFmpeg audio/video filtering library
+Version: 8.49.101
+Requires: 
+Requires.private: libswscale >= 6.8.112, libpostproc >= 56.7.100, libavformat >= 59.34.100, libavcodec >= 59.50.100, libswresample >= 4.9.100, libavutil >= 57.39.100
+Conflicts:
+Libs: -L${libdir}  -lavfilter 
+Libs.private: -pthread -lm -latomic -lass -lm -lharfbuzz -lm -lglib-2.0 -pthread -lpcre -pthread -lgraphite2 -lfontconfig -lexpat -lfreetype -lexpat -lfribidi -lfreetype -lpng16 -lm -lz -lm -lz -lva -lfreetype -lpng16 -lm -lz -lm -lz
+Cflags: -I${includedir}

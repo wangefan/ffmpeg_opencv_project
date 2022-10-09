@@ -1,0 +1,14 @@
+prefix=/home/yf/ffmpeg_build
+exec_prefix=${prefix}
+libdir=/home/yf/ffmpeg_build/lib
+includedir=/home/yf/ffmpeg_build/include
+
+Name: libswresample
+Description: FFmpeg audio resampling library
+Version: 4.9.100
+Requires: 
+Requires.private: libavutil >= 57.39.100
+Conflicts:
+Libs: -L${libdir}  -lswresample 
+Libs.private: -lm -latomic
+Cflags: -I${includedir}

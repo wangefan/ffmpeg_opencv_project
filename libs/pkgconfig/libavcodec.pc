@@ -1,0 +1,14 @@
+prefix=/home/yf/ffmpeg_build
+exec_prefix=${prefix}
+libdir=/home/yf/ffmpeg_build/lib
+includedir=/home/yf/ffmpeg_build/include
+
+Name: libavcodec
+Description: FFmpeg codec library
+Version: 59.50.100
+Requires: 
+Requires.private: libswresample >= 4.9.100, libavutil >= 57.39.100
+Conflicts:
+Libs: -L${libdir}  -lavcodec 
+Libs.private: -lvpx -lm -lpthread -lvpx -lm -lpthread -lvpx -lm -lpthread -lvpx -lm -lpthread -pthread -lm -latomic -L/home/yf/ffmpeg_build/lib -laom -lm -lpthread -lfdk-aac -lm -lmp3lame -lm -lopus -lm -L/home/yf/ffmpeg_build/lib -lSvtAv1Enc -lpthread -lm -lvorbis -lm -logg -lvorbisenc -lvorbis -lm -logg -lx264 -lpthread -lm -ldl -lx265 -lstdc++ -lm -lgcc_s -lgcc -lgcc_s -lgcc -lrt -ldl -lnuma -lz -lva
+Cflags: -I${includedir}
