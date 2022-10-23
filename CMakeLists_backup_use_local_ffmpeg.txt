@@ -4,20 +4,18 @@ cmake_minimum_required(VERSION 2.8)
 project(ffmpegOpencvProject)
 
 # set include
-set(ffmpeg_headers_DIR /usr/include/x86_64-linux-gnu)
 include_directories(${CMAKE_SOURCE_DIR})
-include_directories(${ffmpeg_headers_DIR}/include)
+include_directories(${CMAKE_SOURCE_DIR}/include)
 include_directories(${OpenCV_INCLUDE_DIRS})
 
-# Libraries
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(LIBAV REQUIRED IMPORTED_TARGET
-    libavformat
-    libavcodec
-    libavutil
-    libswresample
-    libswscale
-)
+
+# set library
+message(STATUS "Found CMAKE_SOURCE_DIR/libs = ${CMAKE_SOURCE_DIR}/libs")
+set(ffmpeg_libs_dir ${CMAKE_SOURCE_DIR}/libs)
+add_library( swscale SHARED IMPORTED)
+add_library( avutil SHARED IMPORTED)
+set_target_properties(swscale PROPERTIES IMPORTED_LOCATION ${ffmpeg_libs_dir}/libswscale.so)
+set_target_properties(avutil PROPERTIES IMPORTED_LOCATION ${ffmpeg_libs_dir}/libavutil.so)
 find_package(OpenCV REQUIRED)
 
 # show message of finding openCV
@@ -31,4 +29,4 @@ message(STATUS "Found OpenCV_LIBS = ${OpenCV_LIBS}")
 add_executable(${PROJECT_NAME} ${CMAKE_SOURCE_DIR}/src/main.cpp  ${source})
 
 # link libraries
-target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS} PkgConfig::LIBAV)
+target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS} swscale avutil)
