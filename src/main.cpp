@@ -30,7 +30,7 @@ int main() {
   }
   std::cout << "open inUrl ok" << std::endl;
 
-  std::cout << "==2. prepare converting format" << inUrl << std::endl;
+  std::cout << "==2. prepare converting format stuff, RGB to YUV" << inUrl << std::endl;
   int nSrcWidth = cap.get(cv::CAP_PROP_FRAME_WIDTH);
   int nSrcHeight = cap.get(cv::CAP_PROP_FRAME_HEIGHT);
   int nFPS = cap.get(cv::CAP_PROP_FPS);
@@ -46,14 +46,18 @@ int main() {
   pYUVFrame->width = nSrcWidth;
   pYUVFrame->height = nSrcHeight;
   pYUVFrame->pts = 0;
+  int nYUVPts = 0;
   std::cout << "pYUVFrame->width = " << pYUVFrame->width << ", pYUVFrame->height = " << pYUVFrame->height << std::endl;
   int res = av_frame_get_buffer(pYUVFrame, 0);
   if(res != 0) {
     return XError(res);
   }
 
-  std::cout << "==3. encode.. " << std::endl;
+  std::cout << "==3. Prepare encode stuff, encode to H264 " << std::endl;
+  avcodec_register_all();
   const AVCodec* pH264Codec = avcodec_find_encoder(AV_CODEC_ID_H264);
+  AVPacket pktEncoded;
+  memset(&pktEncoded, 0, sizeof(AVPacket));
   if(!pH264Codec) {
     std::cout << "avcodec_find_encoder failed" << std::endl;
     exit(0);
@@ -100,11 +104,25 @@ int main() {
     inData[0] = inFrame.data;
     int inStride[AV_NUM_DATA_POINTERS] = {0};
     inStride[0] = inFrame.cols * inFrame.elemSize();
+    // h is supposed to be the height of the video
     int h = sws_scale(pSct, inData, inStride, 0, inFrame.rows, pYUVFrame->data, pYUVFrame->linesize);
     if(h <= 0) {
       continue;
     }
-    std::cout << h << " " << std::flush;
+    // encode to H264
+    pYUVFrame->pts = nYUVPts++;
+    //std::cout << "pYUVFrame->pts:" << pYUVFrame->pts;
+    res = avcodec_send_frame(pAvCodecContext, pYUVFrame);
+    if(res != 0)
+      continue;
+
+    res = avcodec_receive_packet(pAvCodecContext, &pktEncoded);
+    // Could observe the pack size, the bigger size would be occurred
+    // very pAvCodecContext->gop_size frames since that would be the key
+    // frame.
+    if(res == 0 && pktEncoded.size > 0)
+      std::cout << "pktEncoded.size:" << pktEncoded.size << "\n" << std::flush;
+    
   }   
 
   sws_freeContext(pSct);
