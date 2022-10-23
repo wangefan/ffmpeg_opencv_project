@@ -3,6 +3,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+#include <stdio.h>
  extern "C"
 {
 #include <libavformat/avformat.h>
@@ -84,7 +85,25 @@ int main() {
     return XError(res);
   }
 
-  std::cout << "==4. process frame loop begin.. " << std::endl;
+  std::cout << "==4. prepare muxing " << std::endl;
+  av_register_all();
+  avformat_network_init();
+  AVFormatContext* pAvFormatContext = NULL;
+  res = avformat_alloc_output_context2(&pAvFormatContext, 0, "flv", outUrl.c_str());
+  if(res < 0) {
+    return XError(res);
+  }
+
+  AVStream* pVStream = avformat_new_stream(pAvFormatContext, NULL);
+  if(!pVStream) {
+    std::cout << "avformat_new_stream failed" << std::endl;
+    exit(0);
+  }
+  pVStream->codecpar->codec_tag = 0;
+  avcodec_parameters_from_context(pVStream->codecpar, pAvCodecContext);
+  av_dump_format(pAvFormatContext, 0, outUrl.c_str(), 1);
+
+  std::cout << "==5. process frame loop begin.. " << std::endl;
   while (true) {
     if(!cap.grab()) { // read and decode
       std::cout << "cap.grab() fail!" << std::endl;
