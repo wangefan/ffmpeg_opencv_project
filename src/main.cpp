@@ -85,23 +85,33 @@ int main() {
     return XError(res);
   }
 
-  std::cout << "==4. prepare muxing " << std::endl;
+  std::cout << "==4. prepare container stuff" << std::endl;
   av_register_all();
   avformat_network_init();
   AVFormatContext* pAvFormatContext = NULL;
-  res = avformat_alloc_output_context2(&pAvFormatContext, 0, "flv", outUrl.c_str());
+  res = avformat_alloc_output_context2(&pAvFormatContext, 0, "flv", outUrl.c_str()); // here is for container format
   if(res < 0) {
     return XError(res);
   }
-
+  // video stream
   AVStream* pVStream = avformat_new_stream(pAvFormatContext, NULL);
   if(!pVStream) {
     std::cout << "avformat_new_stream failed" << std::endl;
     exit(0);
   }
-  pVStream->codecpar->codec_tag = 0;
-  avcodec_parameters_from_context(pVStream->codecpar, pAvCodecContext);
+  pVStream->codecpar->codec_tag = 0; //means no set
+  avcodec_parameters_from_context(pVStream->codecpar, pAvCodecContext); // means copy from encoder context
   av_dump_format(pAvFormatContext, 0, outUrl.c_str(), 1);
+
+  // here is for network protocol, ex:RTMP
+  res = avio_open(&pAvFormatContext->pb, outUrl.c_str(), AVIO_FLAG_WRITE);
+  if(res < 0) {
+    return XError(res);
+  }
+  res = avformat_write_header(pAvFormatContext, NULL);
+  if(res < 0) {
+    return XError(res);
+  }
 
   std::cout << "==5. process frame loop begin.. " << std::endl;
   while (true) {
@@ -134,14 +144,21 @@ int main() {
     res = avcodec_send_frame(pAvCodecContext, pYUVFrame);
     if(res != 0)
       continue;
-
+	// get encoded packet
     res = avcodec_receive_packet(pAvCodecContext, &pktEncoded);
     // Could observe the pack size, the bigger size would be occurred
     // very pAvCodecContext->gop_size frames since that would be the key
     // frame.
-    if(res == 0 && pktEncoded.size > 0)
-      std::cout << "pktEncoded.size:" << pktEncoded.size << "\n" << std::flush;
-    
+    if(res == 0 && pktEncoded.size > 0) {
+      //std::cout << "pktEncoded.size:" << pktEncoded.size << "\n" << std::flush;
+	  // push stream
+	  pktEncoded.pts = av_rescale_q(pktEncoded.pts, pAvCodecContext->time_base, pVStream->time_base);
+	  pktEncoded.dts = av_rescale_q(pktEncoded.dts, pAvCodecContext->time_base, pVStream->time_base);
+	  res = av_interleaved_write_frame(pAvFormatContext, &pktEncoded);
+	  if(res == 0) { // success
+	  	
+	  }
+	}
   }   
 
   sws_freeContext(pSct);
@@ -152,6 +169,10 @@ int main() {
 
   if(pAvCodecContext) {
     avcodec_free_context(&pAvCodecContext);
+  }
+  if(pAvFormatContext) {
+  	avio_closep(&pAvFormatContext->pb);
+	avformat_free_context(pAvFormatContext);
   }
   
   return 0;
