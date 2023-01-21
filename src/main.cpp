@@ -22,7 +22,7 @@ int XError(int res) {
 int main() {
   // ==1. open inUrl
   const std::string inUrl = "rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mp4";
-  const std::string outUrl = "rtmp://10.82.82.200/live";
+  const std::string outUrl = "rtmp://localhost:1936/mylive";
   std::cout << "==1. open inUrl: " << inUrl << std::endl;
   cv::VideoCapture cap;
   if(!cap.open(inUrl)) {
