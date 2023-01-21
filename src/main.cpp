@@ -154,6 +154,7 @@ int main() {
 	  // push stream
 	  pktEncoded.pts = av_rescale_q(pktEncoded.pts, pAvCodecContext->time_base, pVStream->time_base);
 	  pktEncoded.dts = av_rescale_q(pktEncoded.dts, pAvCodecContext->time_base, pVStream->time_base);
+    pktEncoded.duration = av_rescale_q(pktEncoded.duration, pAvCodecContext->time_base, pVStream->time_base);
 	  res = av_interleaved_write_frame(pAvFormatContext, &pktEncoded);
 	  if(res == 0) { // success
 	  	
